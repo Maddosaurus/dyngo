@@ -31,14 +31,13 @@ func determineExtIP() net.IP {
 		fmt.Println("Error retrieving external IP!")
 		os.Exit(1)
 	}
-	fmt.Printf("Found external IP: %v\n", ip.To4().String())
+	log.Printf("Found external IP: %v\n", ip.To4().String())
 	return ip
 }
 
 func removeSubdomain(fullTLD string) string {
 	domain := strings.Split(fullTLD, ".")
 	ret := domain[1] + "." + domain[2]
-	fmt.Println(ret)
 	return ret
 }
 
@@ -50,7 +49,7 @@ func getSubdomainRecord(subdomain string, client *goinwx.Client) (goinwx.Nameser
 	resp, _ := client.Nameservers.Info(req) // FIXME: Error handling
 	for _, child := range resp.Records {
 		if child.Name == subdomain {
-			fmt.Printf("Found Subdomain: %v\n", child)
+			log.Printf("Found Subdomain: %v\n", child)
 			return child, nil
 		}
 	}
@@ -94,7 +93,8 @@ func main() {
 	domain_record := get_env_value("INWX_DOMAIN_RECORD")
 	ip_v4 := determineExtIP().To4().String()
 
-	fmt.Printf("Found data: %v for %v - IP: %v\n\n", username, domain_record, ip_v4)
+	log.Printf("Found data: %v for %v - IP: %v\n", username, domain_record, ip_v4)
 
 	updateRecord(username, password, domain_record, ip_v4)
+	log.Printf("Updated record for %v to %v", domain_record, ip_v4)
 }

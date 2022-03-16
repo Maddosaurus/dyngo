@@ -1,23 +1,33 @@
 # syntax=docker/dockerfile:1
+# See https://blog.baeke.info/2021/03/28/distroless-or-scratch-for-go-apps/
+
+ARG GO_VERSION=1.18
+
+#
 # Build
-FROM golang:1.18-alpine as build
+#
+FROM golang:${GO_VERSION}-alpine as build
+
+RUN apk add --no-cache git
 
 WORKDIR /app
 
-COPY go.mod .
-COPY go.sum .
+COPY ./go.mod ./go.sum ./
 RUN  go mod download
 
-COPY . ./
+COPY ./ ./
 
-RUN go build -buildvcs=false ./cmd/dyngo
+RUN CGO_ENABLED=0 go build -buildvcs=false -installsuffix 'static' -o /dyngo ./cmd/dyngo
 
 
+#
 # Deploy
-FROM alpine
+#
+FROM gcr.io/distroless/static AS final
 
-WORKDIR /
+LABEL maintainer="Maddosaurus"
+USER nonroot:nonroot
 
-COPY --from=build /app/dyngo /
+COPY --from=build --chown=nonroot:nonroot /dyngo /dyngo
 
 ENTRYPOINT [ "/dyngo" ]
