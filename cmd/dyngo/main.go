@@ -41,7 +41,7 @@ func removeSubdomain(fullTLD string) string {
 	return ret
 }
 
-func getSubdomainRecord(subdomain string, client *goinwx.Client) (goinwx.NameserverRecord, error) {
+func getSubdomainRecord(subdomain string, client *goinwx.Client) (*goinwx.NameserverRecord, error) {
 	var req = &goinwx.NameserverInfoRequest{
 		Domain: removeSubdomain(subdomain),
 	}
@@ -50,10 +50,10 @@ func getSubdomainRecord(subdomain string, client *goinwx.Client) (goinwx.Nameser
 	for _, child := range resp.Records {
 		if child.Name == subdomain {
 			log.Printf("Found Subdomain: %v\n", child)
-			return child, nil
+			return &child, nil
 		}
 	}
-	return *&goinwx.NameserverRecord{}, errors.New("Did not find subdomain!")
+	return nil, errors.New("Did not find subdomain!")
 }
 
 func updateRecord(user string, pass string, record string, address string) {
@@ -74,6 +74,11 @@ func updateRecord(user string, pass string, record string, address string) {
 		os.Exit(1)
 	}
 
+	if strings.Compare(subdomain.Content, address) == 0 {
+		log.Printf("A record is still up to date - exiting!")
+		return
+	}
+
 	var request = &goinwx.NameserverRecordRequest{
 		Name:    subdomain.Name,
 		Type:    subdomain.Type,
@@ -85,6 +90,7 @@ func updateRecord(user string, pass string, record string, address string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Updated record for %v to %v", record, address)
 }
 
 func main() {
@@ -96,5 +102,4 @@ func main() {
 	log.Printf("Found data: %v for %v - IP: %v\n", username, domain_record, ip_v4)
 
 	updateRecord(username, password, domain_record, ip_v4)
-	log.Printf("Updated record for %v to %v", domain_record, ip_v4)
 }
