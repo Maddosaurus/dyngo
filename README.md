@@ -12,6 +12,7 @@ Variable | Example | Description
 INWX_USERNAME | abcd1234 | The username you use for logging in at INWX
 INWX_PASSWORD | your-pass | The password you use for logging in at INWX
 INWX_DOMAIN_RECORD | dyn.yourdomain.com | The *full domain name* you want to update
+INWX_SLEEP_MINUTES | 10 | Time dyngo waits between domain ip checks
 
 
 
