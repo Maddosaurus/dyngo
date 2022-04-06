@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   dyngo:
+    restart: unless-stopped
     build:
+      context: .
       dockerfile: Dockerfile
     image: dyngo
     env_file:
